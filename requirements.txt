@@ -1,0 +1,44 @@
+# ============================================================
+# HEART DISEASE PREDICTION - PYTHON DEPENDENCIES
+# ============================================================
+# Kurulum: pip install -r requirements.txt
+# Python sürümü: 3.10+ önerilir
+# ============================================================
+
+# ---------- Web Framework ----------
+Flask==3.0.3
+Flask-WTF==1.2.1               # Form validation ve CSRF koruması
+Werkzeug==3.0.4                # Flask'ın HTTP utility kütüphanesi
+python-dotenv==1.0.1           # .env dosyasından konfigürasyon yükleme
+
+# ---------- Machine Learning ----------
+scikit-learn==1.5.2            # KNN, SVM, Decision Tree, Random Forest, metrikler
+xgboost==2.1.1                 # Gradient boosting modeli
+imbalanced-learn==0.12.3       # SMOTE (sınıf dengesizliği için)
+
+# ---------- Data Processing ----------
+pandas==2.2.2                  # Veri manipülasyonu
+numpy==1.26.4                  # Sayısal işlemler
+
+# ---------- Model Persistence ----------
+joblib==1.4.2                  # Model kaydetme/yükleme (pickle'dan daha güvenli)
+
+# ---------- Visualization (EDA & Reporting) ----------
+matplotlib==3.9.2              # Temel grafikler
+seaborn==0.13.2                # İstatistiksel grafikler
+
+# ---------- Testing ----------
+pytest==8.3.3                  # Test framework
+pytest-cov==5.0.0              # Code coverage raporu
+pytest-flask==1.3.0            # Flask testleri için yardımcı
+
+# ---------- Code Quality (Opsiyonel ama önerilen) ----------
+black==24.8.0                  # Otomatik kod formatlama
+flake8==7.1.1                  # Lint kontrolü
+
+# ---------- Production Server (Deploy için) ----------
+gunicorn==23.0.0               # Production WSGI server (Linux/Mac)
+
+# ---------- Notebook (Geliştirme için) ----------
+jupyter==1.1.1                 # Jupyter Notebook
+ipykernel==6.29.5              # Jupyter kernel
