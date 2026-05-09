@@ -94,6 +94,5 @@ secrets.json
 config_local.py
 
 # ---------- Reports (Geçici çıktılar) ----------
-reports/figures/*.png
 reports/figures/*.jpg
 !reports/figures/.gitkeep
