@@ -49,30 +49,6 @@ instance/
 .webassets-cache
 flask_session/
 
-# ---------- Machine Learning ----------
-# Eğitilmiş modelleri repo'ya koymuyoruz (büyük dosyalar)
-# Bunun yerine eğitim scripti ile yeniden üretilebilir olmalı
-models/trained/*.pkl
-models/trained/*.joblib
-models/trained/*.h5
-!models/trained/.gitkeep
-
-# ---------- Data Files ----------
-# Ham ve işlenmiş veri repo'ya eklenmez (lisans/boyut/kişisel veri)
-data/raw/*
-data/processed/*
-data/external/*
-!data/raw/.gitkeep
-!data/processed/.gitkeep
-!data/external/.gitkeep
-!data/raw/README.md
-
-# CSV/Excel dosyaları (genel kural)
-*.csv
-*.xlsx
-*.xls
-!tests/fixtures/*.csv         # Test fixture'larına izin ver
-
 # ---------- Logs ----------
 *.log
 logs/
@@ -93,6 +69,12 @@ Thumbs.db
 secrets.json
 config_local.py
 
-# ---------- Reports (Geçici çıktılar) ----------
-reports/figures/*.jpg
-!reports/figures/.gitkeep
+# ---------- Sadece HAM veriyi ignore et ----------
+# Ham veri lisans nedeniyle paylasilmaz
+data/raw/*.csv
+!data/raw/README.md
+!data/raw/.gitkeep
+
+# Processed veri ve modelleri DAHIL ediyoruz (mezuniyet projesi icin gerekli)
+# data/processed/  -> takip ediliyor
+# models/trained/   -> takip ediliyor
