@@ -1,0 +1,25 @@
+{
+  "model_name": "KNN",
+  "model_type": "KNeighborsClassifier",
+  "test_accuracy": 0.8688524590163934,
+  "test_roc_auc": 0.9058441558441557,
+  "test_f1": 0.8823529411764706,
+  "training_samples": 241,
+  "test_samples": 61,
+  "features": [
+    "age",
+    "sex",
+    "cp",
+    "trestbps",
+    "chol",
+    "fbs",
+    "restecg",
+    "thalach",
+    "exang",
+    "oldpeak",
+    "slope",
+    "ca",
+    "thal"
+  ],
+  "sprint": "Sprint 3 - Final"
+}

@@ -1,0 +1,7 @@
+Model,Best CV Score (AUC),Test Accuracy,Test F1,Test ROC-AUC,Best Params
+KNN,0.9080613830613832,0.8688524590163934,0.8823529411764706,0.9058441558441557,"{'metric': 'manhattan', 'n_neighbors': 15, 'weights': 'uniform'}"
+Logistic Regression,0.9111111111111111,0.8032786885245902,0.8235294117647058,0.880952380952381,"{'C': 0.01, 'penalty': 'l2', 'solver': 'liblinear'}"
+SVM,0.9057757057757057,0.8032786885245902,0.8285714285714286,0.8809523809523809,"{'C': 0.1, 'gamma': 'scale', 'kernel': 'linear'}"
+Random Forest,0.9166925666925666,0.7704918032786885,0.7878787878787878,0.8582251082251082,"{'max_depth': 5, 'max_features': 'sqrt', 'min_samples_split': 2, 'n_estimators': 100}"
+XGBoost,0.904001554001554,0.7377049180327869,0.7575757575757576,0.8354978354978355,"{'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 200}"
+Decision Tree,0.8397953897953899,0.7049180327868853,0.7272727272727273,0.7970779220779222,"{'criterion': 'entropy', 'max_depth': 5, 'min_samples_split': 10}"
