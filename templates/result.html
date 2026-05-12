@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Tahmin Sonucu{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+    <!-- Başlık -->
+    <div class="text-center mb-4">
+        <h1 class="fw-bold">
+            <i class="bi bi-clipboard2-pulse-fill text-danger"></i>
+            Risk Tahmini Sonucunuz
+        </h1>
+        <p class="text-muted">Yapay zekâ destekli analiz tamamlandı</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+
+            <!-- ============ ANA SONUÇ KARTI ============ -->
+            <!-- Risk seviyesine göre renk değişiyor -->
+            {% set risk_class = {
+                'Dusuk': 'success',
+                'Orta': 'warning',
+                'Yuksek': 'danger'
+            }.get(result.risk_level, 'secondary') %}
+
+            {% set risk_icon = {
+                'Dusuk': 'bi-shield-fill-check',
+                'Orta': 'bi-exclamation-triangle-fill',
+                'Yuksek': 'bi-x-octagon-fill'
+            }.get(result.risk_level, 'bi-question-circle') %}
+
+            {% set risk_text = {
+                'Dusuk': 'DÜŞÜK RİSK',
+                'Orta': 'ORTA RİSK',
+                'Yuksek': 'YÜKSEK RİSK'
+            }.get(result.risk_level, 'Bilinmiyor') %}
+
+            <div class="card border-{{ risk_class }} border-3 shadow-lg mb-4">
+                <div class="card-body p-5 text-center">
+                    <i class="bi {{ risk_icon }} text-{{ risk_class }}" style="font-size: 5rem;"></i>
+                    <h2 class="fw-bold mt-3 text-{{ risk_class }}">{{ risk_text }}</h2>
+                    <p class="text-muted">Tahmin sonucunuz aşağıdaki gibidir</p>
+
+                    <!-- Olasılık Bar -->
+                    <div class="my-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="fw-semibold">Hastalık Olasılığı</span>
+                            <span class="fw-bold text-{{ risk_class }}">{{ result.probability_pct }}</span>
+                        </div>
+                        <div class="progress" style="height: 30px;">
+                            <div class="progress-bar bg-{{ risk_class }} progress-bar-striped progress-bar-animated"
+                                 role="progressbar"
+                                 style="width: {{ (result.probability * 100)|round(1) }}%;"
+                                 aria-valuenow="{{ (result.probability * 100)|round(1) }}"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100">
+                                <strong>{{ result.probability_pct }}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sınıflandırma -->
+                    <div class="row g-3 mt-4">
+                        <div class="col-md-6">
+                            <div class="border rounded p-3 bg-light">
+                                <small class="text-muted d-block">Model Sınıflandırması</small>
+                                <strong class="fs-5">
+                                    {% if result.prediction == 1 %}
+                                        <i class="bi bi-x-circle text-danger"></i> Hasta (1)
+                                    {% else %}
+                                        <i class="bi bi-check-circle text-success"></i> Sağlıklı (0)
+                                    {% endif %}
+                                </strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border rounded p-3 bg-light">
+                                <small class="text-muted d-block">Güven Skoru</small>
+                                <strong class="fs-5">{{ result.probability_pct }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ TAVSİYE KARTI ============ -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-{{ risk_class }} text-white">
+                    <h5 class="mb-0"><i class="bi bi-lightbulb-fill"></i> Sağlık Tavsiyesi</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0 fs-6">{{ result.recommendation }}</p>
+                </div>
+            </div>
+
+            <!-- ============ GİRDİĞİNİZ BİLGİLER ============ -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-list-check"></i> Girdiğiniz Bilgiler</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4 col-sm-6">
+                            <small class="text-muted d-block">Yaş</small>
+                            <strong>{{ result.input_data.age }}</strong>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <small class="text-muted d-block">Cinsiyet</small>
+                            <strong>{% if result.input_data.sex == 1 %}Erkek{% else %}Kadın{% endif %}</strong>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <small class="text-muted d-block">Göğüs Ağrısı Tipi</small>
+                            <strong>{{ result.input_data.cp }}</strong>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <small class="text-muted d-block">Kan Basıncı</small>
+                            <strong>{{ result.input_data.trestbps }} mm Hg</strong>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <small class="text-muted d-block">Kolesterol</small>
+                            <strong>{{ result.input_data.chol }} mg/dl</strong>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <small class="text-muted d-block">Açlık Kan Şekeri</small>
+                            <strong>{% if result.input_data.fbs == 1 %}Yüksek{% else %}Normal{% endif %}</strong>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <small class="text-muted d-block">Dinlenme EKG</small>
+                            <strong>{{ result.input_data.restecg }}</strong>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <small class="text-muted d-block">Max Kalp Hızı</small>
+                            <strong>{{ result.input_data.thalach }}</strong>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <small class="text-muted d-block">Egzersize Bağlı Anjina</small>
+                            <strong>{% if result.input_data.exang == 1 %}Var{% else %}Yok{% endif %}</strong>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <small class="text-muted d-block">ST Depresyonu</small>
+                            <strong>{{ result.input_data.oldpeak }}</strong>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <small class="text-muted d-block">ST Eğimi</small>
+                            <strong>{{ result.input_data.slope }}</strong>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <small class="text-muted d-block">Boyalı Damar Sayısı</small>
+                            <strong>{{ result.input_data.ca }}</strong>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <small class="text-muted d-block">Talasemi</small>
+                            <strong>{{ result.input_data.thal }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ TIBBİ UYARI ============ -->
+            <div class="alert alert-warning border-0 shadow-sm">
+                <h5 class="alert-heading">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Önemli Tıbbi Uyarı
+                </h5>
+                <p class="mb-0">{{ result.disclaimer }}</p>
+            </div>
+
+            <!-- ============ AKSİYON BUTONLARI ============ -->
+            <div class="d-flex justify-content-center gap-3 mt-4 flex-wrap">
+                <a href="{{ url_for('prediction.predict_form') }}" class="btn btn-danger btn-lg">
+                    <i class="bi bi-arrow-clockwise"></i> Yeni Tahmin Yap
+                </a>
+                <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-house-door"></i> Anasayfaya Dön
+                </a>
+                <button onclick="window.print()" class="btn btn-outline-info btn-lg">
+                    <i class="bi bi-printer"></i> Sonucu Yazdır
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

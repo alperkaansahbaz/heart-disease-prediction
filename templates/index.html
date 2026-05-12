@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Anasayfa{% endblock %}
+
+{% block content %}
+
+<!-- ============ HERO SECTION ============ -->
+<section class="hero-section text-white py-5">
+    <div class="container py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="bi bi-heart-pulse-fill"></i>
+                    Kalp Hastalığı Risk Tahmini
+                </h1>
+                <p class="lead mb-4">
+                    Klinik özelliklerinizi girerek <strong>yapay zekâ destekli</strong>
+                    kalp hastalığı risk analizinizi anında öğrenin.
+                    Modelimiz <strong>%86.89 doğruluk</strong> oranında çalışmaktadır.
+                </p>
+                <a href="{{ url_for('prediction.predict_form') }}"
+                   class="btn btn-light btn-lg shadow">
+                    <i class="bi bi-clipboard2-pulse"></i> Hemen Risk Tahminini Yap
+                </a>
+            </div>
+            <div class="col-lg-5 text-center d-none d-lg-block">
+                <i class="bi bi-heart-pulse" style="font-size: 18rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ ÖZELLİKLER ============ -->
+<section class="container py-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">Nasıl Çalışır?</h2>
+        <p class="text-muted">3 basit adımda risk değerlendirmenizi öğrenin</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Adım 1 -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 text-center">
+                <div class="card-body p-4">
+                    <div class="display-4 text-danger mb-3">
+                        <i class="bi bi-1-circle-fill"></i>
+                    </div>
+                    <h5 class="fw-bold">Bilgilerinizi Girin</h5>
+                    <p class="text-muted small">
+                        Yaş, cinsiyet, kolesterol, kan basıncı gibi
+                        13 klinik özelliği forma girin.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Adım 2 -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 text-center">
+                <div class="card-body p-4">
+                    <div class="display-4 text-danger mb-3">
+                        <i class="bi bi-2-circle-fill"></i>
+                    </div>
+                    <h5 class="fw-bold">Yapay Zekâ Analiz Eder</h5>
+                    <p class="text-muted small">
+                        KNN tabanlı makine öğrenmesi modelimiz
+                        verilerinizi anında işler.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Adım 3 -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 text-center">
+                <div class="card-body p-4">
+                    <div class="display-4 text-danger mb-3">
+                        <i class="bi bi-3-circle-fill"></i>
+                    </div>
+                    <h5 class="fw-bold">Sonucu Görün</h5>
+                    <p class="text-muted small">
+                        Risk seviyenizi, olasılığı ve önerilen
+                        adımları anında öğrenin.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ MODEL İSTATİSTİKLERİ ============ -->
+<section class="bg-light py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Model Performansımız</h2>
+            <p class="text-muted">Akademik standartlarda eğitilmiş ve test edilmiş</p>
+        </div>
+
+        <div class="row g-4 text-center">
+            <div class="col-md-3 col-6">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <div class="display-3 fw-bold text-danger">%87</div>
+                        <p class="text-muted mb-0">Test Doğruluğu</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <div class="display-3 fw-bold text-danger">0.91</div>
+                        <p class="text-muted mb-0">ROC-AUC Skoru</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <div class="display-3 fw-bold text-danger">9</div>
+                        <p class="text-muted mb-0">Test Edilen Model</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <div class="display-3 fw-bold text-danger">302</div>
+                        <p class="text-muted mb-0">Klinik Veri</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ UYARI ============ -->
+<section class="container py-5">
+    <div class="alert alert-warning border-0 shadow-sm">
+        <h5 class="alert-heading">
+            <i class="bi bi-exclamation-triangle-fill"></i> Önemli Uyarı
+        </h5>
+        <p class="mb-0">
+            Bu sistem <strong>akademik amaçlı bir prototiptir</strong> ve hiçbir şekilde
+            <strong>tıbbi tanı veya tedavi aracı olarak kullanılamaz</strong>.
+            Sonuçlar yalnızca bilgi ve farkındalık amaçlıdır.
+            Sağlığınızla ilgili kararlar için mutlaka bir doktora başvurun.
+        </p>
+    </div>
+</section>
+
+<!-- ============ CTA (Call to Action) ============ -->
+<section class="bg-danger text-white py-5">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-3">Hazırsanız Başlayalım</h2>
+        <p class="lead mb-4">
+            Sadece 2 dakikanızı ayırın, kalp sağlığınız hakkında bir fikir edinin.
+        </p>
+        <a href="{{ url_for('prediction.predict_form') }}"
+           class="btn btn-light btn-lg shadow">
+            <i class="bi bi-arrow-right-circle"></i> Risk Tahmini Yap
+        </a>
+    </div>
+</section>
+
+{% endblock %}
