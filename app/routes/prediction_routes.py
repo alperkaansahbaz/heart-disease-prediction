@@ -1,65 +1,94 @@
 """
 prediction_routes.py — Tahmin Route'lari
 ==========================================
-POST /api/predict  -> JSON ile tahmin yap (form data alir)
-GET  /api/info     -> Modelin bekledigi alanlar hakkinda bilgi
+GET  /predict       -> Form sayfasi (predict.html)
+POST /predict       -> Form gonderildiginde tahmin yap, result.html render et
+POST /api/predict   -> JSON API (PowerShell/Postman testleri icin)
+GET  /api/info      -> Modelin bekledigi alanlar (JSON)
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 
 from app.services.prediction_service import prediction_service
 from app.utils.exceptions import (
     InvalidInputError,
     MissingFieldError,
     ModelNotLoadedError,
-    PredictionError,
-    HeartDiseaseException
+    PredictionError
 )
 from config import FEATURE_NAMES, VALIDATION_RULES
 
 
-# Blueprint olustur (prefix: /api)
-prediction_bp = Blueprint('prediction', __name__, url_prefix='/api')
+# Blueprint - root url ('/'), api'lar ayrica '/api/' altinda
+prediction_bp = Blueprint('prediction', __name__)
 
 
-@prediction_bp.route('/predict', methods=['POST'])
-def predict():
-    """Tahmin yapan ana endpoint.
+# ============================================================
+# HTML ROUTES (Tarayicidan kullanim)
+# ============================================================
+
+@prediction_bp.route('/predict', methods=['GET', 'POST'])
+def predict_form():
+    """Form sayfasi VE form gonderimi.
     
-    Beklenen Input (JSON veya form data):
-        {
-            "age": 52, "sex": 1, "cp": 0, "trestbps": 125,
-            "chol": 212, "fbs": 0, "restecg": 1, "thalach": 168,
-            "exang": 0, "oldpeak": 1.0, "slope": 2, "ca": 2, "thal": 3
-        }
-    
-    Donus:
-        Basarili (200):
-            {
-                "prediction": 1,
-                "prediction_label": "Hasta",
-                "probability": 0.87,
-                "probability_pct": "%87.0",
-                "risk_level": "Yuksek",
-                "recommendation": "...",
-                "disclaimer": "..."
-            }
-        
-        Hatali (400):
-            {"error": "InvalidInputError", "message": "...", "status_code": 400}
-        
-        Sunucu Hatasi (500):
-            {"error": "ModelNotLoadedError", "message": "...", "status_code": 500}
+    GET  : Bos formu goster
+    POST : Form'u isle, sonucu goster (result.html) veya hata gosterir (predict.html)
     """
-    # 1. Veri tipine gore form_data'yi al
-    # JSON ise: request.json
-    # Form ise: request.form
+    # GET - Bos form goster
+    if request.method == 'GET':
+        return render_template('predict.html')
+    
+    # POST - Form'u isle
+    form_data = request.form.to_dict()
+    
+    try:
+        # Tahmin yap (service'de hata kontrolu var)
+        result = prediction_service.predict(form_data)
+        
+        # Sonuc sayfasini goster
+        return render_template('result.html', result=result)
+    
+    except (InvalidInputError, MissingFieldError) as e:
+        # Kullanici hatasi - Form'u hata mesajiyla geri goster
+        return render_template(
+            'predict.html',
+            error=e.message,
+            form_data=form_data
+        )
+    
+    except (ModelNotLoadedError, PredictionError) as e:
+        # Sunucu hatasi - Error sayfasi
+        return render_template(
+            'error.html',
+            error_code=500,
+            error_message=e.message
+        ), 500
+    
+    except Exception as e:
+        return render_template(
+            'error.html',
+            error_code=500,
+            error_message=f'Beklenmedik bir hata: {str(e)}'
+        ), 500
+
+
+# ============================================================
+# JSON API ROUTES (PowerShell/Postman testleri icin)
+# ============================================================
+
+@prediction_bp.route('/api/predict', methods=['POST'])
+def api_predict():
+    """JSON API endpoint - Tahmin yapar.
+    
+    Beklenen: JSON gonderim
+    Donus: JSON sonuc
+    """
+    # JSON veya form veriyi al
     if request.is_json:
         form_data = request.json
     else:
         form_data = request.form.to_dict()
     
-    # 2. Bos mu kontrol et
     if not form_data:
         return jsonify({
             'error': 'InvalidInputError',
@@ -67,34 +96,27 @@ def predict():
             'status_code': 400
         }), 400
     
-    # 3. Tahmin yap
     try:
         result = prediction_service.predict(form_data)
         return jsonify(result), 200
     
     except (InvalidInputError, MissingFieldError) as e:
-        # Kullanici hatasi - 400
         return jsonify(e.to_dict()), e.status_code
     
     except (ModelNotLoadedError, PredictionError) as e:
-        # Sunucu hatasi - 500
         return jsonify(e.to_dict()), e.status_code
     
     except Exception as e:
-        # Beklenmeyen hata
         return jsonify({
             'error': 'UnknownError',
-            'message': f'Beklenmedik bir hata: {str(e)}',
+            'message': f'Beklenmedik hata: {str(e)}',
             'status_code': 500
         }), 500
 
 
-@prediction_bp.route('/info', methods=['GET'])
-def info():
-    """Modelin bekledigi alanlar hakkinda bilgi dondurur.
-    
-    Frontend gelistirmek isteyenler veya API kullanicilari icin.
-    """
+@prediction_bp.route('/api/info', methods=['GET'])
+def api_info():
+    """API kullanim rehberi."""
     fields_info = {}
     for field, rule in VALIDATION_RULES.items():
         fields_info[field] = {
@@ -121,16 +143,16 @@ def _get_field_description(field):
     descriptions = {
         'age': 'Yas (yil)',
         'sex': 'Cinsiyet (0=Kadin, 1=Erkek)',
-        'cp': 'Gogus agrisi tipi (0=Tipik, 1=Atipik, 2=Anjina disi, 3=Asemptomatik)',
+        'cp': 'Gogus agrisi tipi (0-3)',
         'trestbps': 'Istirahat kan basinci (mm Hg)',
         'chol': 'Serum kolesterol (mg/dl)',
-        'fbs': 'Aclik kan sekeri >120 mg/dl (0=Hayir, 1=Evet)',
-        'restecg': 'Dinlenme EKG sonuclari (0=Normal, 1=ST-T anormal, 2=Sol ventrikul)',
+        'fbs': 'Aclik kan sekeri >120 mg/dl (0/1)',
+        'restecg': 'Dinlenme EKG sonuclari (0-2)',
         'thalach': 'Maksimum kalp atis hizi',
-        'exang': 'Egzersize bagli anjina (0=Hayir, 1=Evet)',
-        'oldpeak': 'ST depresyonu (egzersiz vs dinlenme)',
-        'slope': 'ST segmenti egimi (0=Asagi, 1=Duz, 2=Yukari)',
-        'ca': 'Floroskopi ile renklendirilen damar sayisi (0-4)',
+        'exang': 'Egzersize bagli anjina (0/1)',
+        'oldpeak': 'ST depresyonu',
+        'slope': 'ST segmenti egimi (0-2)',
+        'ca': 'Floroskopi damar sayisi (0-4)',
         'thal': 'Talasemi (0-3)'
     }
     return descriptions.get(field, 'Aciklama yok')
