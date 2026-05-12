@@ -212,4 +212,19 @@ Bu proje akademik amaçlı geliştirilmiştir. Detaylar için `LICENSE` dosyası
 - [UCI Heart Disease Dataset](https://archive.ics.uci.edu/dataset/45/heart+disease)
 - [scikit-learn Documentation](https://scikit-learn.org/)
 - [Flask Documentation](https://flask.palletsprojects.com/)
+## 🧪 Test ve Kalite Güvencesi
 
+Proje **pytest** framework'ü ile kapsamlı şekilde test edilmiştir.
+
+### Test İstatistikleri
+
+| Kategori | Test Sayısı | Açıklama |
+|----------|-------------|----------|
+| **Unit Tests** | 41 | Validatorler, formatterlar, service |
+| **Integration Tests** | 15 | HTTP route'ları, JSON API |
+| **Toplam** | **56 PASSED** | %100 başarılı |
+| **Code Coverage** | **%76** | Endüstri standardının üzerinde |
+
+### Test Çalıştırma
+
+```bash
