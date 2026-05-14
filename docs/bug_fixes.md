@@ -1,60 +1,104 @@
 # Karşılaşılan Sorunlar ve Çözümler
 
+Bu dokümanda proje geliştirme sürecinde karşılaşılan kritik sorunlar ve uygulanan çözümler detaylı olarak açıklanmaktadır.
+
+---
+
 ## UCI Heart Disease Dataset Etiket Paradoksu
 
-### Problem
+### Problem Tanımı
 
-Proje Sprint 4 ve sonrasında, sistemin **klinik beklentilere ters** sonuçlar ürettiği tespit edildi:
+Proje Sprint 4 sonrası yapılan kullanıcı kabul testlerinde, sistemin **klinik beklentilere tamamen ters** sonuçlar ürettiği tespit edilmiştir.
 
-- 26 yaşında, tüm değerleri normal bir kadın → **%100 Hasta** olarak değerlendirildi
-- Klinik olarak yüksek riskli bir profil → **Sağlıklı** olarak değerlendirilebiliyordu
+**Örnek Senaryo:** 26 yaşında, tüm klinik değerleri normal aralıkta olan bir kadın hastaya ait veri girildiğinde, sistem **%100 olasılıkla "Hasta"** olarak tahmin yapmaktadır. Bu durum tıbbi olarak mantıksızdır ve sistemin güvenilirliğini sorgulatmaktadır.
+
+### Tespit Süreci
+
+Sorun, manuel klinik testler sırasında tespit edildi. Otomatik birim testler bu sorunu yakalayamadı çünkü testler **fonksiyonel doğruluğu** (return tipi, alan varlığı) test ediyordu, **semantik doğruluğu** değil.
 
 ### Kök Neden Analizi
 
-UCI Heart Disease Dataset'in **standart konvansiyondan farklı** etiket şeması olduğu tespit edildi:
-Bu durum şu veri ile doğrulandı:
+Dataset analizi yapıldığında, UCI Heart Disease Dataset'in **standart ML konvansiyonundan farklı** bir etiket şeması kullandığı tespit edildi:
+### Doğrulama Verisi
 
-| Target | Yaş Ortalaması | Yaş Aralığı |
-|--------|----------------|-------------|
-| target=0 | 56.6 (yaşlı) | 35-77 |
-| target=1 | 52.5 (genç) | 29-76 |
+Hipotezi doğrulamak için target sınıflarının demografik özellikleri analiz edildi:
 
-Yaşlı bireylerin "target=0" grubunda olması, bu grubun **hasta** olduğunu gösterir.
+| Target Sınıfı | Yaş Ortalaması | Yaş Aralığı | Yorum |
+|---------------|----------------|-------------|-------|
+| target = 0    | 56.6           | 35-77       | Yaşlı popülasyon → **Hasta grubu** |
+| target = 1    | 52.5           | 29-76       | Genç popülasyon → **Sağlıklı grubu** |
 
-### Çözüm
+Klinik mantık gereği kalp hastalığı riski yaşla artar. Yaş ortalaması yüksek olan grubun "hasta" grubu olması gerekir. Bu, target=0'ın hasta grubu olduğunu kanıtlamaktadır.
 
-`prediction_service.py` içinde **label inversion** uygulandı:
+### Uygulanan Çözüm
+
+`app/services/prediction_service.py` dosyasında **label inversion** tekniği uygulanmıştır:
 
 ```python
 # Modelden ham tahmin al
 raw_prediction = self.model.predict(X_scaled)[0]
 raw_proba = self.model.predict_proba(X_scaled)[0]
 
-# Dataset'e gore ters cevir
-prediction = 1 - raw_prediction        # 0 -> 1, 1 -> 0
-probability = raw_proba[0]              # Class 0 (dataset'te Hasta)
+# Etiketleri standart konvansiyona çevir
+prediction = 1 - raw_prediction   # 0 -> 1 (Hasta), 1 -> 0 (Sağlıklı)
+probability = raw_proba[0]         # Class 0 olasılığı = Gerçek hasta olma olasılığı
 ```
 
-Bu sayede:
-- Dış arayüzde **1=Hasta, 0=Saglikli** standart konvansiyonu korundu
-- Model çıktısı klinik beklentilerle uyumlu hale geldi
+### Doğrulama Testleri
 
-### Doğrulama
+Çözüm sonrası 3 farklı klinik profil ile sistem doğrulandı:
 
-3 farklı profil ile test edildi:
+| Profil | Demografik | Klinik Beklenti | Sistem Çıktısı | Sonuç |
+|--------|------------|-----------------|----------------|-------|
+| Genç Sağlıklı | 26 yaş, normal değerler | Düşük Risk | Sağlıklı (%0) | ✅ |
+| Yaşlı Hasta | 70 yaş, kötü değerler | Yüksek Risk | Hasta (%100) | ✅ |
+| Orta Yaş Karışık | 52 yaş, karışık değerler | Orta Risk | Orta (%60) | ✅ |
 
-| Profil | Beklenen | Sonuç |
-|--------|----------|-------|
-| 26 yaş, normal değerler | Sağlıklı | ✅ Sağlıklı (%0) |
-| 70 yaş, kötü değerler | Hasta | ✅ Hasta (%100) |
-| 52 yaş, karışık değerler | Orta | ✅ Orta (%60) |
+Tüm testler klinik beklentilerle uyumlu sonuçlar üretmiştir.
 
-### Akademik Değer
+### Akademik Değerlendirme
 
-Bu sorun, gerçek dünya ML projelerinde **dataset bias** ve **labeling inconsistency**'nin önemini vurgulamaktadır. UCI Heart Disease dataset'in birçok farklı versiyonu mevcut olup, etiket konvansiyonları arasında farklılıklar olabilmektedir.
+Bu sorun gerçek dünya ML projelerinde sıklıkla karşılaşılan **dataset bias** ve **etiket tutarsızlığı** problemlerinin bir örneğidir.
 
-### Ders
+**Önemli Bulgular:**
 
-- ✅ Modelin **klinik mantığa uygun** çıktı ürettiğinin **manuel olarak doğrulanması** önemlidir
-- ✅ Birim testler her zaman semantic doğruluğu yakalayamaz
-- ✅ Dataset'in **dökümanını** detaylı incelemek gerekir
+1. **Dataset doğrulama kritiktir:** Sadece dökümana güvenmek yerine, etiketlerin demografik analizi ile doğrulanması gereklidir.
+
+2. **Klinik domain bilgisi şarttır:** Saf istatistiksel doğruluk yeterli değildir. Sonuçlar **uzman alan bilgisi** ile karşılaştırılmalıdır.
+
+3. **Manuel test önemlidir:** Otomatik testler her zaman semantik doğruluğu yakalayamaz.
+
+4. **Iterative debugging:** Bug detection → root cause analysis → solution → verification döngüsü uygulanmalıdır.
+
+### Çıkarılan Dersler
+
+- ✅ ML modelleri **klinik mantığa uygun** çıktı üretmelidir
+- ✅ Birim testler **semantik doğruluk** için yetersiz olabilir
+- ✅ **Demografik dağılım analizi** etiket doğrulamasında etkilidir
+- ✅ Production sistemler **manuel kabul testleri** ile mutlaka doğrulanmalıdır
+
+---
+
+## Diğer Karşılaşılan Sorunlar
+
+### Python 3.14 - scikit-learn Uyumsuzluğu
+
+Proje başlangıcında Python 3.14 ile scikit-learn 1.5.2 uyumsuzluğu nedeniyle Python 3.12.10'a geçilmiştir.
+
+### VS Code __init__.py Karışıklığı
+
+Aynı isimde 7 farklı `__init__.py` dosyası olduğundan, doğru dosyaya kod yazmak için terminal komutları (`code app/__init__.py`) tercih edilmiştir.
+
+### Pytest conftest.py Yazım Hatası
+
+Dosya adı yanlışlıkla `confest.py` olarak oluşturuldu. Bu, pytest'in fixture'ları bulamamasına neden oldu. Dosya silinip doğru isimle yeniden oluşturuldu.
+
+### Notebook Kaydetme Sorunu
+
+VS Code'da notebook hücreleri çalıştırılsa bile Ctrl+S yapılmadığında GitHub'a boş olarak yüklenmektedir. **Auto Save** ayarı açılarak bu sorun çözüldü.
+
+---
+
+## Sonuç
+
+Bu sorunlar proje geliştirme sürecinin doğal bir parçasıdır ve her biri yazılım mühendisliği pratikleri için değerli öğrenme deneyimleri sağlamıştır. Tüm sorunlar sistematik **debug yaklaşımı** ile çözülmüş ve dokümante edilmiştir.
