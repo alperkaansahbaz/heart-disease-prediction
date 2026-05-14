@@ -5,6 +5,12 @@ Form verisini alir, modeli kullanir, sonucu formatlar.
 
 Bu sinif Singleton pattern ile calisir:
 Modeli sadece bir kez yukler, sonra tekrar tekrar kullanir.
+
+NOT: UCI Heart Disease dataset'inde etiketler tersine yorumlanmistir:
+  - Dataset'te target=0 -> Kalp hastasi var (Hasta)
+  - Dataset'te target=1 -> Kalp hastasi yok (Saglikli)
+Bu yuzden modelin ciktisini disa donerken (1=Hasta, 0=Saglikli)
+standardina cevriyoruz.
 """
 
 import joblib
@@ -67,7 +73,8 @@ class PredictionService:
             2. Feature vector olustur
             3. Scale (scaler.transform)
             4. Predict (model.predict + predict_proba)
-            5. Format (formatters.py)
+            5. ETIKET DUZELTMESI (dataset paradoksunu cozer)
+            6. Format (formatters.py)
         
         Args:
             form_data: dict (Flask request.form veya request.json)
@@ -99,11 +106,29 @@ class PredictionService:
             # 4. Scale et
             X_scaled = self.scaler.transform(X)
             
-            # 5. Tahmin yap
-            prediction = self.model.predict(X_scaled)[0]
-            probability = self.model.predict_proba(X_scaled)[0][1]  # Class 1 olasiligi
+            # 5. Modelden HAM tahmin al
+            raw_prediction = self.model.predict(X_scaled)[0]
+            raw_proba = self.model.predict_proba(X_scaled)[0]
             
-            # 6. Formatla ve dondur
+            # ============================================================
+            # 6. ETIKET DUZELTMESI (Dataset Paradoksu)
+            # ============================================================
+            # UCI Heart Disease dataset'inde:
+            #   raw_prediction = 0 -> Hasta (kalp hastasi var)
+            #   raw_prediction = 1 -> Saglikli (kalp hastasi yok)
+            # 
+            # Biz disa donerken standart yapiyoruz:
+            #   prediction = 1 -> Hasta
+            #   prediction = 0 -> Saglikli
+            # 
+            # Bunun icin tahmini ters cevirip,
+            # "Hasta olma olasiligini" raw_proba[0]'dan aliyoruz
+            # (cunku dataset'te sinif 0 = Hasta)
+            # ============================================================
+            prediction = 1 - raw_prediction  # 0 -> 1, 1 -> 0
+            probability = raw_proba[0]       # Class 0 olasiligi = Hasta olasiligi
+            
+            # 7. Formatla ve dondur
             result = format_prediction_result(prediction, probability)
             
             # Bonus: Kullanicinin girdigi temizlenmis veriyi de ekle
