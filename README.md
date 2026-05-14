@@ -1,166 +1,193 @@
 # 🫀 Heart Disease Prediction System
 
-> Klinik özelliklere dayalı makine öğrenmesi ile kalp hastalığı risk tahmini
+> Klinik özelliklere dayalı makine öğrenmesi ile **kalp hastalığı risk tahmini** yapan, web tabanlı bir karar destek sistemi.
 
-[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
-[![Flask](https://img.shields.io/badge/Flask-3.0-green.svg)](https://flask.palletsprojects.com/)
-[![scikit-learn](https://img.shields.io/badge/scikit--learn-1.5-orange.svg)](https://scikit-learn.org/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
----
-
-## 📋 İçindekiler
-
-- [Proje Hakkında](#-proje-hakkında)
-- [Sistem Mimarisi](#-sistem-mimarisi)
-- [Kullanılan Teknolojiler](#-kullanılan-teknolojiler)
-- [Klasör Yapısı](#-klasör-yapısı)
-- [Kurulum](#-kurulum)
-- [Kullanım](#-kullanım)
-- [Model Performansı](#-model-performansı)
-- [Test](#-test)
-- [Geliştirme Yol Haritası](#-geliştirme-yol-haritası)
-- [Ekip](#-ekip)
+![Python](https://img.shields.io/badge/python-3.12-blue.svg)
+![Flask](https://img.shields.io/badge/flask-3.0-green.svg)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-1.5.2-orange.svg)
+![Bootstrap](https://img.shields.io/badge/bootstrap-5.3.3-purple.svg)
+![License](https://img.shields.io/badge/license-Academic-yellow.svg)
+![Tests](https://img.shields.io/badge/tests-56%20passed-brightgreen.svg)
+![Coverage](https://img.shields.io/badge/coverage-76%25-brightgreen.svg)
+![Accuracy](https://img.shields.io/badge/accuracy-86.89%25-success.svg)
 
 ---
 
-## 🎯 Proje Hakkında
+## 📖 Proje Hakkında
 
-Bu proje, **OSTİM Teknik Üniversitesi Bilgisayar Mühendisliği** bölümü mezuniyet projesi olarak geliştirilmektedir. Amaç, bireylere ait klinik özellikleri (yaş, kolesterol, tansiyon, göğüs ağrısı tipi vb.) kullanarak makine öğrenmesi yöntemleriyle kalp hastalığı riskini tahmin eden bir **web tabanlı karar destek sistemi** geliştirmektir.
+Bu proje, **OSTİM Teknik Üniversitesi Bilgisayar Mühendisliği** bölümü bitirme tezi kapsamında geliştirilmiştir. **TÜBİTAK 2209-A Üniversite Öğrencileri Araştırma Projeleri Destek Programı** kapsamında değerlendirilmektedir.
 
-### Problem Tanımı
+Sistem, 13 klinik özelliği (yaş, kan basıncı, kolesterol vb.) kullanarak bir kişinin **kalp hastalığı riskini** anlık olarak tahmin eder. Kullanıcı dostu bir web arayüzü ile herkes tarafından kullanılabilir.
 
-Kalp ve damar hastalıkları dünya genelinde ölüm nedenleri arasında ilk sırada yer almaktadır. Geleneksel risk skorlama yöntemleri (örn. Framingham) sınırlı sayıda değişken kullanır ve doğrusal yaklaşımlara dayanır. Bu proje, çok değişkenli klinik verilerden **ensemble learning** yöntemleriyle daha doğru tahmin yapan bir sistem önermektedir.
+### 🎯 Hedef
 
-### Hedefler
-
-- ✅ ≥%85 doğruluk oranına ulaşan bir ML modeli geliştirmek
-- ✅ Kullanıcı dostu bir web arayüzü tasarlamak
-- ✅ Model ve arayüzü entegre eden çalışan bir MVP üretmek
-- ✅ Akademik standartlarda dokümantasyon ve test sağlamak
+Yapay zeka tabanlı klinik karar destek sistemlerinin **erken teşhis** alanındaki potansiyelini araştırmak ve prototip bir uygulama geliştirmek.
 
 ---
 
-## 🏗️ Sistem Mimarisi
+## ✨ Özellikler
 
-```
-┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
-│                  │      │                  │      │                  │
-│   USER (Browser) │ ───► │  Flask Web App   │ ───► │   ML Model       │
-│   HTML + CSS     │ ◄─── │  (Controller)    │ ◄─── │   (joblib .pkl)  │
-│                  │      │                  │      │                  │
-└──────────────────┘      └──────────────────┘      └──────────────────┘
-       Frontend               Application Layer         ML Inference Layer
-```
-
-Detaylı mimari için → [docs/architecture.md](docs/architecture.md)
+- 🤖 **9 ML modeli** karşılaştırıldı, en iyisi (KNN) seçildi
+- 📊 **%86.89 doğruluk**, 0.91 ROC-AUC skoru
+- 🎨 **Responsive web arayüz** (Bootstrap 5)
+- 🌐 **REST API** desteği (JSON)
+- ✅ **56 otomatik test**, %76 code coverage
+- 🩺 **3 risk seviyesi**: Düşük, Orta, Yüksek
+- 📋 **Klinik öneri sistemi**
+- 🖨️ **Sonuç yazdırma** desteği
 
 ---
 
-## 🛠️ Kullanılan Teknolojiler
+## 🏗️ Mimari
+┌──────────────────────────────────────────────────┐
+│  Frontend (Bootstrap 5 + Jinja2)                  │
+│  ↓ HTTP                                           │
+│  Flask Routes (Blueprints)                        │
+│  ↓                                                │
+│  Validators & Formatters                          │
+│  ↓                                                │
+│  PredictionService (Singleton)                    │
+│  ↓                                                │
+│  KNN Classifier + StandardScaler                  │
+└──────────────────────────────────────────────────┘
+### 🛠️ Teknoloji Stack
 
-| Katman | Teknoloji |
-|--------|-----------|
-| **Backend** | Python 3.10+, Flask 3.0 |
-| **Frontend** | HTML5, CSS3, Bootstrap 5 |
-| **Machine Learning** | scikit-learn, XGBoost |
-| **Veri İşleme** | pandas, NumPy |
-| **Model Kaydı** | joblib |
-| **Görselleştirme** | matplotlib, seaborn |
-| **Test** | pytest, pytest-flask |
-| **Versiyon Kontrol** | Git, GitHub |
-
----
-
-## 📁 Klasör Yapısı
-
-```
-heart-disease-prediction/
-├── data/              # Veri setleri (raw, processed)
-├── models/            # Eğitilmiş modeller ve metrikler
-├── src/               # ML pipeline (eğitim, feature engineering)
-├── app/               # Flask web uygulaması
-├── static/            # CSS, JS, görseller
-├── templates/         # HTML şablonları
-├── tests/             # Birim ve entegrasyon testleri
-├── notebooks/         # Jupyter notebook'lar (EDA)
-├── docs/              # Dokümantasyon
-├── reports/           # Akademik rapor için grafikler
-├── config.py          # Konfigürasyon
-├── run.py             # Uygulama giriş noktası
-└── requirements.txt   # Bağımlılıklar
-```
+**Backend:** Python 3.12, Flask 3.0  
+**ML:** scikit-learn 1.5.2, XGBoost 2.1.1, pandas 2.2.2  
+**Frontend:** Bootstrap 5.3.3, Bootstrap Icons 1.11.3  
+**Testing:** pytest 8.3.3, pytest-cov 5.0.0  
+**Version Control:** Git, GitHub
 
 ---
 
-## ⚙️ Kurulum
+## 🚀 Kurulum ve Çalıştırma
 
-### Ön Gereksinimler
+### Önkoşullar
 
-- Python 3.10 veya üstü
+- Python 3.12+
 - pip
-- Git
 
 ### Adımlar
 
+1. **Repository'i klonlayın:**
 ```bash
-# 1. Repo'yu klonla
-git clone https://github.com/<kullanici-adi>/heart-disease-prediction.git
-cd heart-disease-prediction
-
-# 2. Sanal ortam oluştur
-python -m venv venv
-
-# Windows
-venv\Scripts\activate
-# Linux / Mac
-source venv/bin/activate
-
-# 3. Bağımlılıkları yükle
-pip install -r requirements.txt
-
-# 4. Veri setini indir (data/raw/ içine yerleştir)
-# Heart Disease Dataset: https://archive.ics.uci.edu/dataset/45/heart+disease
-
-# 5. Modeli eğit
-python -m src.models.train_model
-
-# 6. Uygulamayı başlat
-python run.py
+   git clone https://github.com/alperkaansahbaz/heart-disease-prediction.git
+   cd heart-disease-prediction
 ```
 
-Uygulama varsayılan olarak `http://127.0.0.1:5000` adresinde çalışır.
+2. **Virtual environment oluşturun:**
+```bash
+   python -m venv venv
+```
+
+3. **Virtual environment'ı aktive edin:**
+```bash
+   # Windows
+   venv\Scripts\activate
+   
+   # macOS/Linux
+   source venv/bin/activate
+```
+
+4. **Bağımlılıkları yükleyin:**
+```bash
+   pip install -r requirements.txt
+```
+
+5. **Uygulamayı çalıştırın:**
+```bash
+   python run.py
+```
+
+6. **Tarayıcıda açın:**
+http://127.0.0.1:5000
+---
+
+## 📡 API Kullanımı
+
+### POST /api/predict
+
+Tahmin yapan ana endpoint.
+
+**İstek:**
+```json
+{
+  "age": 52,
+  "sex": 1,
+  "cp": 0,
+  "trestbps": 125,
+  "chol": 212,
+  "fbs": 0,
+  "restecg": 1,
+  "thalach": 168,
+  "exang": 0,
+  "oldpeak": 1.0,
+  "slope": 2,
+  "ca": 2,
+  "thal": 3
+}
+```
+
+**Yanıt:**
+```json
+{
+  "prediction": 0,
+  "prediction_label": "Saglikli",
+  "probability": 0.4,
+  "probability_pct": "%40.0",
+  "risk_level": "Orta",
+  "recommendation": "Bir doktora başvurarak detaylı muayene yaptırmanız önerilir...",
+  "disclaimer": "UYARI: Bu sistem bir tıbbi tanı aracı değildir..."
+}
+```
+
+### Diğer Endpoint'ler
+
+| Method | URL | Açıklama |
+|--------|-----|----------|
+| GET | `/` | Anasayfa |
+| GET | `/about` | Proje hakkında |
+| GET | `/predict` | Form sayfası |
+| POST | `/predict` | Form submit (HTML) |
+| GET | `/health` | Sağlık kontrolü |
+| GET | `/api/info` | API alan bilgileri |
+| POST | `/api/predict` | JSON API tahmin |
 
 ---
 
-## 💻 Kullanım
+## 🤖 Model Performansı
 
-1. Tarayıcıda `http://127.0.0.1:5000` adresine gidin.
-2. Klinik bilgilerinizi forma girin:
-   - Yaş, cinsiyet, göğüs ağrısı tipi
-   - Kan basıncı, kolesterol seviyesi
-   - Açlık kan şekeri, EKG sonuçları
-   - Maksimum kalp atış hızı, vb.
-3. **"Risk Tahmini Yap"** butonuna tıklayın.
-4. Sonucu ve risk skorunu görüntüleyin.
+### Karşılaştırma
 
-> ⚠️ **Tıbbi Sorumluluk Reddi:** Bu sistem akademik bir prototiptir ve tıbbi tanı amacıyla kullanılamaz.
+| Model | Test Accuracy | Test ROC-AUC |
+|-------|---------------|--------------|
+| **KNN (Optimized)** ⭐ | **%86.89** | **0.9058** |
+| Voting (Soft) | %81.97 | 0.9037 |
+| Stacking | %83.61 | 0.9026 |
+| Bagging | %83.61 | 0.8999 |
+| Logistic Regression | %80.33 | 0.8810 |
+| SVM | %80.33 | 0.8810 |
+| Random Forest | %77.05 | 0.8582 |
+| XGBoost | %73.77 | 0.8355 |
+| Decision Tree | %70.49 | 0.7971 |
 
----
+### Final Model (KNN)
 
-## 📊 Model Performansı
+```python
+{
+    'n_neighbors': 15,
+    'metric': 'manhattan',
+    'weights': 'uniform',
+    'algorithm': 'auto'
+}
+```
 
-> Bu bölüm model eğitimi tamamlandıktan sonra güncellenecektir.
+### Veri Seti
 
-| Model | Accuracy | F1-Score | ROC-AUC |
-|-------|----------|----------|---------|
-| Logistic Regression | TBD | TBD | TBD |
-| KNN | TBD | TBD | TBD |
-| SVM | TBD | TBD | TBD |
-| Decision Tree | TBD | TBD | TBD |
-| Random Forest | TBD | TBD | TBD |
-| XGBoost | TBD | TBD | TBD |
-| **Ensemble (Stacking)** | **TBD** | **TBD** | **TBD** |
+- **Kaynak:** UCI Heart Disease Dataset
+- **Boyut:** 1025 → 302 satır (duplicate temizliği)
+- **Özellikler:** 13 klinik özellik
+- **Sınıf Dağılımı:** Dengeli (%51 hasta, %49 sağlıklı)
 
 ---
 
@@ -168,63 +195,94 @@ Uygulama varsayılan olarak `http://127.0.0.1:5000` adresinde çalışır.
 
 ```bash
 # Tüm testleri çalıştır
-pytest
+pytest tests/ -v
 
-# Coverage raporu
-pytest --cov=app --cov=src --cov-report=html
+# Coverage raporu (terminal)
+pytest tests/ --cov=app --cov-report=term-missing
+
+# Coverage raporu (HTML)
+pytest tests/ --cov=app --cov-report=html
 ```
+
+### Test İstatistikleri
+
+| Kategori | Test Sayısı |
+|----------|-------------|
+| Unit Tests | 41 |
+| Integration Tests | 15 |
+| **Toplam** | **56 PASSED** |
+| **Coverage** | **%76** |
 
 ---
 
-## 🗺️ Geliştirme Yol Haritası
-
-- [x] Sprint 0: Proje altyapısı ve kurulum
-- [ ] Sprint 1: Veri analizi ve EDA
-- [ ] Sprint 2: Model eğitimi ve seçimi
-- [ ] Sprint 3: Ensemble yöntemleri ve optimizasyon
-- [ ] Sprint 4: Flask backend geliştirme
-- [ ] Sprint 5: Frontend (HTML + Bootstrap)
-- [ ] Sprint 6: Entegrasyon ve test
-- [ ] Sprint 7: Dokümantasyon ve sunum
-
+## 📁 Proje Yapısı
+heart-disease-prediction/
+├── app/                    # Flask uygulaması
+│   ├── routes/             # URL endpoint'leri
+│   ├── services/           # İş mantığı (model)
+│   ├── utils/              # Yardımcı fonksiyonlar
+│   └── init.py         # Application Factory
+├── data/                   # Veri setleri
+│   ├── raw/                # Ham veri
+│   └── processed/          # Temiz veri
+├── models/                 # Eğitilmiş modeller
+│   ├── trained/            # .pkl dosyaları
+│   └── metrics/            # Performans metrikleri
+├── notebooks/              # Jupyter notebook'lar (EDA, modeling)
+├── reports/figures/        # Görselleştirmeler
+├── templates/              # HTML şablonları
+├── static/                 # CSS, JS, görseller
+├── tests/                  # pytest test dosyaları
+│   ├── unit/               # Birim testler
+│   └── integration/        # Entegrasyon testleri
+├── docs/                   # Dokümantasyon
+├── config.py               # Konfigürasyon
+├── run.py                  # Giriş noktası
+└── requirements.txt        # Python bağımlılıkları
 ---
 
 ## 👥 Ekip
 
-| İsim | Rol | GitHub |
-|------|-----|--------|
-| **Alperen ARSLAN** | ML Engineer & Backend Developer | [@kullanici](https://github.com/) |
-| **Alper Kaan ŞAHBAZ** | Frontend Developer & Data Analyst | [@kullanici](https://github.com/) |
-
-**Danışman:** Murad NAGHİYEV  
-**Kurum:** OSTİM Teknik Üniversitesi - Bilgisayar Mühendisliği Bölümü
+| Rol | İsim |
+|-----|------|
+| **ML Engineer & Backend** | Alperen ARSLAN |
+| **Frontend & Data Analyst** | Alper Kaan ŞAHBAZ |
+| **Akademik Danışman** | Murad NAGHİYEV |
 
 ---
 
-## 📜 Lisans
+## 📚 Dokümantasyon
 
-Bu proje akademik amaçlı geliştirilmiştir. Detaylar için `LICENSE` dosyasına bakınız.
+Detaylı dokümantasyon için `docs/` klasörüne bakın:
+
+- `architecture.md` — Sistem mimarisi
+- `eda_report.md` — Veri analizi raporu
+- `sprint_plan.md` — Sprint planlaması
+- `test_strategy.md` — Test stratejisi
+- `visualization_plan.md` — Görselleştirme planı
 
 ---
 
-## 📚 Kaynaklar
+## ⚠️ Tıbbi Sorumluluk Reddi
 
-- [UCI Heart Disease Dataset](https://archive.ics.uci.edu/dataset/45/heart+disease)
-- [scikit-learn Documentation](https://scikit-learn.org/)
-- [Flask Documentation](https://flask.palletsprojects.com/)
-## 🧪 Test ve Kalite Güvencesi
+> **ÖNEMLİ:** Bu sistem **yalnızca akademik amaçlı bir prototiptir** ve hiçbir koşulda tıbbi tanı, tedavi veya klinik karar verme aracı olarak kullanılamaz. Sağlığınızla ilgili her türlü karar için mutlaka bir uzman hekime danışınız.
 
-Proje **pytest** framework'ü ile kapsamlı şekilde test edilmiştir.
+---
 
-### Test İstatistikleri
+## 📝 Lisans
 
-| Kategori | Test Sayısı | Açıklama |
-|----------|-------------|----------|
-| **Unit Tests** | 41 | Validatorler, formatterlar, service |
-| **Integration Tests** | 15 | HTTP route'ları, JSON API |
-| **Toplam** | **56 PASSED** | %100 başarılı |
-| **Code Coverage** | **%76** | Endüstri standardının üzerinde |
+Bu proje akademik bir mezuniyet projesi olarak geliştirilmiştir.
 
-### Test Çalıştırma
+---
 
-```bash
+## 🏛️ Akademik Kurum
+
+**OSTİM Teknik Üniversitesi**  
+Mühendislik Fakültesi · Bilgisayar Mühendisliği Bölümü  
+Mezuniyet Projesi · 2025-2026
+
+---
+
+<p align="center">
+  <strong>🫀 HeartCheck — Yapay Zeka Destekli Kalp Sağlığı Değerlendirmesi 🫀</strong>
+</p>
